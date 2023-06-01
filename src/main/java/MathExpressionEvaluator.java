@@ -1,19 +1,31 @@
 package com.example.demo;
+
+
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.BufferedReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 
 public class MathExpressionEvaluator {
 
     public static String evaluateExpression(String expression) throws IOException {
+
         String url = "https://api.mathjs.org/v4/";
-        String params = "expr=" + expression.replace(" ", "%20");
-        URL apiURL = new URL(url + "?" + params);
+
+
+        try{
+
+        String encodedExpression = URLEncoder.encode(expression, "UTF-8");
+        URL apiURL = new URL(url + "?expr=" + encodedExpression);
         HttpURLConnection connection = (HttpURLConnection) apiURL.openConnection();
         connection.setRequestMethod("GET");
 
+
+        int statusCode = connection.getResponseCode();
+
+        if (statusCode == HttpURLConnection.HTTP_OK) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         String result = reader.readLine().trim();
 
@@ -21,6 +33,17 @@ public class MathExpressionEvaluator {
         connection.disconnect();
 
         return result;
+
+            }
+
+            else {
+                throw new IOException("HTTP Error: " + statusCode);
+            }
+        }
+       catch (IOException e) {
+            // Handle exception
+           return "Error: " + e.getMessage();
+        }
     }
 
     public static void evaluateExpressions(String[] expressions) throws IOException {
